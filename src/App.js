@@ -20,6 +20,9 @@ const  firebaseConfig = {
 
 function App() {
   const [users, setUsers] = useState([]);
+  const [userName, setUserName] = useState("");
+  const [age, setAge] = useState();
+
   const hundleClickFetchButton = async () => { 
     const db = firebase.firestore();
     // document取得
@@ -40,6 +43,37 @@ function App() {
     setUsers(_users)
   }
 
+  const hundleClickAddButton = async () => {
+    if(!userName || !age) {
+      alert('"userName" or "age"がからです' );
+      return;
+    }
+    const parseAge = parseInt(age,10);
+
+    if( isNaN(parseAge) ) { //parseIntができてない
+      alert('number は半角の数値でセットしてください');
+      return;　
+    }
+
+
+    const db = firebase.firestore();
+    await db 
+    .collection("users")
+    .doc("1") //setの場合はdocに自らidを割り振る
+    .set({
+      name: userName,
+      age: age
+    }, {merge:true}); //mergeは全体書き換えを阻止し、追加、変更要素のみ
+    // .add({　自動で
+    //   // name: "Dummy",
+    //   age: 1
+    // }, {merge:true});
+
+    setUserName('');
+    setAge('');
+    }
+
+
   const userListItems = users.map(user => {
     return (
       <li key={user.userId}>{user.name} : {user.age} : {user.location} </li>
@@ -47,8 +81,26 @@ function App() {
   })
   return (
     <div className="App">
-     Hello2
+     <div>Hello2</div>
+     <div>
+       <label htmlFor="username">UserName : </label>
+       <input
+        type="text"
+        id="username"
+        value={userName}
+        onChange={(event) => {setUserName(event.target.value)}}
+       ></input>
+       <label htmlFor="age">age : </label>
+       <input
+        type="text"
+        id="age"
+        value={age}
+        onChange={(event) => {setAge(event.target.value)}}
+       ></input>
+
+     </div>
      <button onClick={hundleClickFetchButton}>取得</button>
+     <button onClick={hundleClickAddButton}>追加</button>
      <ul>{userListItems}</ul>
     </div>
 
