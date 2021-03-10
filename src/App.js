@@ -1,29 +1,18 @@
 import logo from './logo.svg';
 import './App.css';
-import React, {useState} from "react"
+import React, {useState, useEffect} from "react"
 import firebase from 'firebase';
+import  {signupWithEmailAndPassword, signInWithEmailAndPassword} from "./firebase/firebase"
 
-const  firebaseConfig = {
-  apiKey: "AIzaSyC9x8yQEcHgbI6bkaygmzdy0Wm7SMsF_bY",
-  authDomain: "tuyopon-firebase101.firebaseapp.com",
-  projectId: "tuyopon-firebase101",
-  storageBucket: "tuyopon-firebase101.appspot.com",
-  messagingSenderId: "812944710309",
-  appId: "1:812944710309:web:4fa654b1e1250f83250b4c",
-  measurementId: "G-E1B9XNELTD"
-};
-
- // Initialize Firebase
- firebase.initializeApp(firebaseConfig);
- firebase.analytics();
-
-
-function App() {
+export default function App() {
+  const [email, setEmail] = useState("");
+  const [password, setPassWord] = useState("")
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState("");
   const [age, setAge] = useState();
+  // const [documentId, setDocumentId]
 
-  const hundleClickFetchButton = async () => { 
+  const handleClickFetchButton = async () => { 
     const db = firebase.firestore();
     // document取得
   //   const doc = await db.collection("users").doc("7VHWnOzZxNsQc0ZojzhA").get();
@@ -43,7 +32,7 @@ function App() {
     setUsers(_users)
   }
 
-  const hundleClickAddButton = async () => {
+  const handleClickAddButton = async () => {
     if(!userName || !age) {
       alert('"userName" or "age"がからです' );
       return;
@@ -52,15 +41,15 @@ function App() {
 
     if( isNaN(parseAge) ) { //parseIntができてない
       alert('number は半角の数値でセットしてください');
-      return;　
+      return;
     }
 
 
     const db = firebase.firestore();
     await db 
     .collection("users")
-    .doc("1") //setの場合はdocに自らidを割り振る
-    .set({
+     //setの場合はdocに自らidを割り振る
+    .add({
       name: userName,
       age: age
     }, {merge:true}); //mergeは全体書き換えを阻止し、追加、変更要素のみ
@@ -73,15 +62,57 @@ function App() {
     setAge('');
     }
 
+  const handleClickDeteleButton = async () => {
+    const db = firebase.firestore();
+    const dt = db.collection("users").doc("1").delete();
+  }
 
+  // useEffect(() => {
+  //   const db = firebase.firestore();
+  //   const unsubscribe = db.collection("users").onSnapshot((querySnapshot) => {
+  //     console.log("検知！！")
+  //     // querySnapshot.forEach(doc)
+  //   })
+  //   return () => {
+  //     cleanup
+  //   }
+  // }, [input])
   const userListItems = users.map(user => {
     return (
       <li key={user.userId}>{user.name} : {user.age} : {user.location} </li>
     )
   })
+
+  const signup = async (event) => {
+    event.preventDefault(); //webページの再読み込みを行わない
+    console.log("email:",email );
+    console.log("password:",password );
+    const user = await signupWithEmailAndPassword(email, password);
+    console.log("登録user情報:",user);
+  }
+
+  const signin = async (event) => {
+    event.preventDefault(); //webページの再読み込みを行わない
+    console.log("email:",email );
+    console.log("password:",password );
+    const user = await signInWithEmailAndPassword(email, password);
+    console.log("サインインuser情報:",user);
+
+  }
   return (
     <div className="App">
      <div>Hello2</div>
+     <h1>Auth動作確認</h1>
+     <form onSubmit={signup}>
+       <input type="text" value={email} onChange={(event) => setEmail(event.target.value)}></input>
+       <input type="password" value={password} onChange={(event) => setPassWord(event.target.value)}></input>
+       <button type={"submit"}>登録</button>
+     </form>
+     <form onSubmit={signin}>
+       <input type="text" value={email} onChange={(event) => setEmail(event.target.value)}></input>
+       <input type="password" value={password} onChange={(event) => setPassWord(event.target.value)}></input>
+       <button type={"submit"}>ログイン</button>
+     </form>
      <div>
        <label htmlFor="username">UserName : </label>
        <input
@@ -99,12 +130,11 @@ function App() {
        ></input>
 
      </div>
-     <button onClick={hundleClickFetchButton}>取得</button>
-     <button onClick={hundleClickAddButton}>追加</button>
+     <button onClick={handleClickFetchButton}>取得</button>
+     <button onClick={handleClickAddButton}>追加</button>
+     <button onClick={handleClickDeteleButton}>削除</button>
      <ul>{userListItems}</ul>
     </div>
 
   );
-}
-
-export default App;
+  }
