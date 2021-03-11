@@ -31,3 +31,16 @@ const  firebaseConfig = {
     return user;
 
  } 
+
+ export const signInAnonymously =  (email, password) => {
+  firebase.auth().signInAnonymously()
+  .then(() => {
+    // Signed in..
+  })
+  .catch((error) => {
+    var errorCode = error.code;
+    var errorMessage = error.message;
+    // ...
+  });
+
+ } 

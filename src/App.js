@@ -2,13 +2,14 @@ import logo from './logo.svg';
 import './App.css';
 import React, {useState, useEffect} from "react"
 import firebase from 'firebase';
-import  {signupWithEmailAndPassword, signInWithEmailAndPassword} from "./firebase/firebase"
+import  {signupWithEmailAndPassword, signInWithEmailAndPassword, signInAnonymously} from "./firebase/firebase"
 
 export default function App() {
   const [email, setEmail] = useState("");
   const [password, setPassWord] = useState("")
   const [users, setUsers] = useState([]);
   const [userName, setUserName] = useState("");
+  const [uid, setUid] = useState("");
   const [age, setAge] = useState();
   // const [documentId, setDocumentId]
 
@@ -47,9 +48,9 @@ export default function App() {
 
     const db = firebase.firestore();
     await db 
-    .collection("users")
+    .collection("users").doc(firebase.auth().currentUser.uid)
      //setの場合はdocに自らidを割り振る
-    .add({
+    .set({
       name: userName,
       age: age
     }, {merge:true}); //mergeは全体書き換えを阻止し、追加、変更要素のみ
@@ -90,6 +91,7 @@ export default function App() {
     const user = await signupWithEmailAndPassword(email, password);
     console.log("登録user情報:",user);
   }
+  
 
   const signin = async (event) => {
     event.preventDefault(); //webページの再読み込みを行わない
@@ -99,6 +101,21 @@ export default function App() {
     console.log("サインインuser情報:",user);
 
   }
+
+  const guestsignin = async () => {
+    console.log("email:",email );
+    console.log("password:",password );
+    const user = await signInAnonymously();
+    console.log("サインインuser情報:",user);
+
+  }
+const getUid = async () => {
+  const _uid = await firebase.auth().currentUser.uid;
+    console.log(_uid);
+    setUid(_uid);
+ 
+}
+
   return (
     <div className="App">
      <div>Hello2</div>
@@ -113,6 +130,7 @@ export default function App() {
        <input type="password" value={password} onChange={(event) => setPassWord(event.target.value)}></input>
        <button type={"submit"}>ログイン</button>
      </form>
+     <button onClick={guestsignin}>guestlogin</button>
      <div>
        <label htmlFor="username">UserName : </label>
        <input
@@ -133,6 +151,7 @@ export default function App() {
      <button onClick={handleClickFetchButton}>取得</button>
      <button onClick={handleClickAddButton}>追加</button>
      <button onClick={handleClickDeteleButton}>削除</button>
+     <button onClick={getUid}>UID</button>
      <ul>{userListItems}</ul>
     </div>
 
